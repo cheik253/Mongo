@@ -18,15 +18,15 @@ def get_data():
        
 
         return render_template('list_candidate.html',result=data)
-  
+@app.route('/vote')
+def vote():
 
 
 
-
-@app.route('/add_election/<candiate>,<voter>')   
-def add_election(candiate,voter):
+@app.route('/add_election/<name>')   
+def add_election(name):
    #Joe Biden
-   Candidate.update_one({ "name": candiate },{ '$push': { "voter": voter } })
+   Candidate.update_one({ "name": name },{ '$push': { "voter": "heiba" } })
 
 #     #db.people.updateOne(
 #   { "name": "Donald Trump" }, // the query to find the document
@@ -35,7 +35,7 @@ def add_election(candiate,voter):
 
     
 
-   return redirect(url_for('get_data')) 
+   return redirect(url_for('get')) 
 @app.route('/update_voted') 
 def update_voted():
     pipeline = [

@@ -7,26 +7,20 @@ app.config['MONGO_URI'] = 'mongodb://localhost:27017/Mongo'  # Change this URI b
 mongo = PyMongo(app)
 Voter=mongo.db.voter
 Candidate=mongo.db.candidate
-
 @app.route('/')
 def get_data():
     
-        collection = mongo.db.candidate
+        collection = mongo.db.voter
         data = collection.find()
 
         # Convert ObjectId to string for JSON serialization
        
 
-        return render_template('list_candidate.html',result=data)
-  
-
-
-
-
-@app.route('/add_election/<candiate>,<voter>')   
-def add_election(candiate,voter):
+        return render_template('a.html',result=data)
+@app.route('/add_election/<name>')   
+def add_election(name):
    #Joe Biden
-   Candidate.update_one({ "name": candiate },{ '$push': { "voter": voter } })
+   Candidate.update_one({ "name": name },{ '$push': { "voter": "heiba" } })
 
 #     #db.people.updateOne(
 #   { "name": "Donald Trump" }, // the query to find the document
@@ -34,12 +28,11 @@ def add_election(candiate,voter):
 # )
 
     
-
-   return redirect(url_for('get_data')) 
-@app.route('/update_voted') 
-def update_voted():
+   return redirect(url_for('get_data'))  
+@app.route('/update_voted/<name>')
+def update_voted(name):
     pipeline = [
-       
+        {"$match": {"voter": name}},
         {"$unwind": "$voter"},  # Unwind the "voter" array
         {"$group": {"_id": "$voter"}},
         {"$project": {"_id": 0, "name": "$_id"}}
@@ -50,9 +43,15 @@ def update_voted():
 
     # Update voters in the Voter collection based on the names obtained
     for voter_name in voter_names:
-        Voter.update_many({"name": voter_name['name']}, {"$set": {"has_voted": 1}})
+         print(f"Updating voter: {voter_name['name']}")
+         result = Voter.update_many(
+        {"name": {"$regex": f"^{voter_name['name']}$", "$options": "i"}},
+        {"$set": {"has_voted": 1}}
+    )
+      print(f"Modified Count: {result.modified_count}")
+
     
-    return "Voters updated successfully"    
+      
 @app.route('/count')
 def count():
     try:

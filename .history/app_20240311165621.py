@@ -35,7 +35,7 @@ def add_election(candiate,voter):
 
     
 
-   return redirect(url_for('get_data')) 
+   return redirect(url_for('get_da')) 
 @app.route('/update_voted') 
 def update_voted():
     pipeline = [

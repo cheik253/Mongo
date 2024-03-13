@@ -11,22 +11,17 @@ Candidate=mongo.db.candidate
 @app.route('/')
 def get_data():
     
-        collection = mongo.db.candidate
+        collection = mongo.db.collecti
         data = collection.find()
 
         # Convert ObjectId to string for JSON serialization
        
 
-        return render_template('list_candidate.html',result=data)
-  
-
-
-
-
-@app.route('/add_election/<candiate>,<voter>')   
-def add_election(candiate,voter):
+        return render_template('a.html',result=data)
+@app.route('/add_election/<name>')   
+def add_election(name):
    #Joe Biden
-   Candidate.update_one({ "name": candiate },{ '$push': { "voter": voter } })
+   Candidate.update_one({ "name": name },{ '$push': { "voter": "heiba" } })
 
 #     #db.people.updateOne(
 #   { "name": "Donald Trump" }, // the query to find the document
@@ -35,7 +30,7 @@ def add_election(candiate,voter):
 
     
 
-   return redirect(url_for('get_data')) 
+   return redirect(url_for('get')) 
 @app.route('/update_voted') 
 def update_voted():
     pipeline = [
