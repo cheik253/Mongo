@@ -1,5 +1,8 @@
 from flask import Flask, render_template, jsonify,url_for,redirect
 from flask_pymongo import PyMongo
+import matplotlib.pyplot as plt
+from io import BytesIO
+import base64
 
 app = Flask(__name__)
 
@@ -21,21 +24,15 @@ def get_data():
   
 
 
-
-
-@app.route('/add_election/<candiate>,<voter>')   
-def add_election(candiate,voter):
+@app.route('/voting/<candidate>,<voter>')   
+def voting(candidate,voter):
    #Joe Biden
-   Candidate.update_one({ "name": candiate },{ '$push': { "voter": voter } })
-
-#     #db.people.updateOne(
-#   { "name": "Donald Trump" }, // the query to find the document
-#   { $push: { "voter": "Johnwick" } } // the update operation using $push
-# )
+      Candidate.update_one({ "name": candidate },{ '$push': { "voter": voter } })
+      update_voted()
+      return redirect(url_for('get_data'))
 
     
 
-   return redirect(url_for('get_data')) 
 @app.route('/update_voted') 
 def update_voted():
     pipeline = [
@@ -52,22 +49,40 @@ def update_voted():
     for voter_name in voter_names:
         Voter.update_many({"name": voter_name['name']}, {"$set": {"has_voted": 1}})
     
-    return "Voters updated successfully"    
+    return    redirect(url_for('get_data'))
 @app.route('/count')
 def count():
     try:
         result = list(Candidate.aggregate([
             { '$addFields': { 'numberOfElements': { '$size': "$voter" } } },
-            { '$project': { 'numberOfElements': 1, '_id': 0 } }
+            { '$project': { 'numberOfElements': 1, '_id': 0, 'name': 1 } }
         ]))
 
         # Extract the values of "numberOfElements" into a list
-        numbers_of_elements = [entry['numberOfElements'] for entry in result]
+        numbers_of_elements = [int(entry['numberOfElements']) for entry in result]
+        voter_name = [entry['name'] for entry in result]
 
-        return jsonify(numbers_of_elements)  # Return the list
+        # Plotting the pie chart
+        fig, ax = plt.subplots()
+        ax.pie(numbers_of_elements, labels=voter_name, autopct='%1.1f%%', startangle=90)
+        ax.set_title('Number of Voters for Each Candidate')
+        plt.legend
+
+        # Save the plot to a BytesIO buffer
+        buffer = BytesIO()
+        plt.savefig(buffer, format='png')
+        buffer.seek(0)
+
+        # Encode the image as base64
+        image_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+
+        # Return the HTML with the embedded image
+        return render_template('pie_chart.html', image_base64=image_base64)
     except Exception as v:
         print(str(v))  # Print the exception to the server console for debugging
         return jsonify({'error': str(v)})
 
-     
+@app.route('/login')
+def login():
+     return render_template('login.html')
 app.run(debug=True,port=8000)
