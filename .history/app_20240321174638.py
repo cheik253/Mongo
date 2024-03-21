@@ -27,13 +27,10 @@ def register():
              flash('Age should be greater or equal to 16.', 'error')  # Flash an error message
              return redirect(url_for('register'))
         check_name=Voter.find_one({'name':nom})
-        check_pass=Voter.find_one({'paswd':pawd})
+        check_pass=Voter.find_one('paswd':pawd)
 
         if check_name:
             flash('name already exists', 'error')  # Flash an error message
-            return redirect(url_for('register'))
-        if check_pass:
-            flash('password already exists', 'error')  # Flash an error message
             return redirect(url_for('register'))
 
 
