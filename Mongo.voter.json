@@ -1,0 +1,70 @@
+[{
+  "_id": {
+    "$oid": "65ee0619488ed0a833694c8b"
+  },
+  "name": "Johnwick",
+  "age": 70,
+  "has_voted": 1,
+  "email": "21036@supnum.mr",
+  "paswd": "3"
+},
+{
+  "_id": {
+    "$oid": "65ee28d873e8986e3437602d"
+  },
+  "name": "madara",
+  "age": 20,
+  "has_voted": 1,
+  "email": "21006@supnum.mr",
+  "paswd": "1"
+},
+{
+  "_id": {
+    "$oid": "65fbab418470c5cc8248aa86"
+  },
+  "name": "cheik goth",
+  "age": 444444,
+  "has_voted": 1,
+  "email": "zackidal253@gmail.com",
+  "paswd": "uu"
+},
+{
+  "_id": {
+    "$oid": "65fc3135706c10bb827d11a3"
+  },
+  "name": "h",
+  "age": 20,
+  "has_voted": 1,
+  "email": "21036@supnum.mr",
+  "paswd": "1"
+},
+{
+  "_id": {
+    "$oid": "65fc34c66c496391bdb9a1e8"
+  },
+  "name": "weva",
+  "age": 20,
+  "has_voted": 1,
+  "email": "zackidal253@gmail.com",
+  "paswd": "1"
+},
+{
+  "_id": {
+    "$oid": "65fc3e236c496391bdb9a1e9"
+  },
+  "name": "sonne",
+  "age": 30,
+  "has_voted": 1,
+  "email": "21036@supnum.mr",
+  "paswd": "1"
+},
+{
+  "_id": {
+    "$oid": "65fc72ffea9a4c9adadecf11"
+  },
+  "name": "ubhjklm",
+  "age": 12333,
+  "has_voted": 0,
+  "email": "21036@supnum.mr",
+  "paswd": "ee"
+}]

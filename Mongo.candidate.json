@@ -1,0 +1,44 @@
+[{
+  "_id": {
+    "$oid": "65ee216a37c9d8810e7cd428"
+  },
+  "name": "Donald Trump",
+  "age": 76,
+  "voter": [
+    "cheik",
+    "madara",
+    "heiba",
+    "heiba",
+    "h",
+    "weva",
+    "cheik goth"
+  ]
+},
+{
+  "_id": {
+    "$oid": "65ee26d373e8986e3437602c"
+  },
+  "name": "cheik",
+  "age": 81,
+  "voter": [
+    "madara",
+    "madara",
+    "heiba",
+    "weva",
+    "sonne",
+    "cheik goth"
+  ]
+},
+{
+  "_id": {
+    "$oid": "65f0c9f4ed1a7b917da35703"
+  },
+  "name": "madara",
+  "age": 40,
+  "voter": [
+    "john",
+    "john",
+    "cheik goth",
+    "madara"
+  ]
+}]
