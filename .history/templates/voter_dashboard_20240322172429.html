@@ -4,17 +4,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Election</title>
+  <title>Modernize Free</title>
   <link rel="shortcut icon" type="image/png" href="static/images/logos/favicon.png" />
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.min.css') }}">
 </head>
 
 <body>
-
-
+  <!--  Body Wrapper -->
   <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
     data-sidebar-position="fixed" data-header-position="fixed">
-   
+     {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" role="alert" style="color: white; background-color: green;align-text:center">
+    {{ message }}  
+        <!-- Some content here -->
+    
+        {% endfor %}
+    {% endif %}
+{% endwith %}
     <!-- Sidebar Start -->
     <aside class="left-sidebar">
       <!-- Sidebar scroll-->
@@ -216,6 +224,10 @@
                          <th class="border-bottom-0">
                           <h6 class="fw-semibold mb-0">vote</h6>
                         </th>
+                          <th class="border-bottom-0">
+                          <h6 class="fw-semibold mb-0">votesu</h6>
+                        </th>
+                        
                        
                       </tr>
                     </thead>
@@ -263,26 +275,6 @@
  <script src="{{ url_for('static', filename='libs/apexcharts/dist/apexcharts.min.js')}}"></script>
   <script src="{{ url_for('static', filename='/libs/simplebar/dist/simplebar.js')}}"></script>
   <script src="{{ url_for('static', filename='/js/dashboard.js')}}"></script>
-  <script>
-    
-        // Get the session timeout value in seconds from Flask
-        var sessionTimeoutSeconds = {{ session_timeout_seconds }};
-        
-        // Convert session timeout to milliseconds
-        var sessionTimeoutMilliseconds = sessionTimeoutSeconds * 1000;
-
-        // Function to reload the page after session timeout
-        function reloadPageAfterSessionTimeout() {
-            setTimeout(function() {
-                location.reload(true); // Reload the page
-            }, sessionTimeoutMilliseconds);
-        }
-
-        // Call the function to start the countdown
-        reloadPageAfterSessionTimeout();
-  
-  </script>
-   
 </body>
 
 </html>

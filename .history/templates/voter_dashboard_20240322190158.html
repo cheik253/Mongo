@@ -263,8 +263,7 @@
  <script src="{{ url_for('static', filename='libs/apexcharts/dist/apexcharts.min.js')}}"></script>
   <script src="{{ url_for('static', filename='/libs/simplebar/dist/simplebar.js')}}"></script>
   <script src="{{ url_for('static', filename='/js/dashboard.js')}}"></script>
-  <script>
-    
+    <script>
         // Get the session timeout value in seconds from Flask
         var sessionTimeoutSeconds = {{ session_timeout_seconds }};
         
@@ -280,9 +279,7 @@
 
         // Call the function to start the countdown
         reloadPageAfterSessionTimeout();
-  
-  </script>
-   
+    </script>
 </body>
 
 </html>

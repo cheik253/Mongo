@@ -1,26 +1,22 @@
-from flask import Flask, render_template, jsonify, url_for, redirect, request, flash, session
+from flask import Flask, render_template, jsonify, url_for, redirect, request, flash,session
 from flask_pymongo import PyMongo
-from flask_session import Session
-from datetime import timedelta
+
 
 app = Flask(__name__)
-app.secret_key = 'Cheik2263'  # Needed for sessions
-app.config['SESSION_TYPE'] = 'filesystem'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=24)  # Adjust the time as needed
+app.secret_key = 'Cheik2263' # Needed for sessions
 
-# Initialize Flask-Session
-Session(app)
+
 
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/Mongo'  # Change this URI based on your MongoDB configuration
 mongo = PyMongo(app)
-Voter = mongo.db.voter
-Candidate = mongo.db.candidate
+Voter=mongo.db.voter
+Candidate=mongo.db.candidate
+
 
 
 @app.route('/', methods=['GET', 'POST'])
 def register():
-    if 'user' in session:
-        return redirect(url_for('dashboard'))
+   
     if request.method == 'POST':
         nom = request.form['nom']
         email = request.form['email']
@@ -28,10 +24,10 @@ def register():
         pawd = request.form['passwd']
 
         if age < 16:
-            flash('Age should be greater or equal to 16.', 'error')  # Flash an error message
-            return redirect(url_for('register'))
-        check_name = Voter.find_one({'name': nom})
-        check_pass = Voter.find_one({'paswd': pawd})
+             flash('Age should be greater or equal to 16.', 'error')  # Flash an error message
+             return redirect(url_for('register'))
+        check_name=Voter.find_one({'name':nom})
+        check_pass=Voter.find_one({'paswd':pawd})
 
         if check_name:
             flash('name already exists', 'error')  # Flash an error message
@@ -40,38 +36,15 @@ def register():
             flash('password already exists', 'error')  # Flash an error message
             return redirect(url_for('register'))
 
+
         query = {'name': nom, 'age': age, 'has_voted': 0, 'email': email, 'paswd': pawd}
         Voter.insert_one(query)  # Assuming 'Voter' is your collection
         flash('Voter added successfully!')
         return redirect(url_for('login'))
+        # return redirect(url_for('register'))  # Redirect or render a template as required
 
+    # Render your registration form template if method is GET
     return render_template('register.html')
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if 'user' in session:
-        return redirect(url_for('dashboard'))
-    if request.method == 'POST':
-        name = request.form['name']
-        password = request.form['password']
-
-        user = Voter.find_one({'name': name, 'paswd': password})
-
-        if user:
-            session['user'] = name
-            return redirect(url_for('dashboard'))
-        else:
-            flash('Invalid username or password', 'error')
-
-    return render_template('login.html')
-
-
-@app.route('/logout')
-def logout():
-    session.pop('user', None)
-    return redirect(url_for('login'))
-
 
         
 
@@ -86,8 +59,10 @@ def voting(candidate, voter):
     candidate_doc = Candidate.find_one({'name': candidate, 'voter': {'$elemMatch': {'$eq': voter}}})
 
     if candidate_doc:
+        a='<div class="alert alert-warning alert-dismissible fade show" role="alert"><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">you h</button></div>'
         return redirect(url_for('dashboard'))
-        flash(f'You have already voted for {candidate}', 'error')
+    
+        
     else:
         # If the voter does not exist, update the candidate's voter list
         Candidate.update_one({'name': candidate}, {'$push': {'voter': voter}})
@@ -131,10 +106,44 @@ def count():
         return jsonify(chartData=[{"data": numbers_of_elements}], categories=voter_name)
     except Exception as e:
         return jsonify(error=str(e)), 500
+@app.route('/login',methods=['GET','POST'])
+def login():
+   
+    if request.method == 'POST':
+        name = request.form['name']
+        password = request.form['password']
 
+        # Here, you should query your database to check if the username and password match
+        # This is just a placeholder logic.
+        # if name=='admin' and password=='1':
+        #      session['user'] = name
+        #      return redirect(url_for('admin'))
+
+        user = Voter.find_one({'name':name, 'paswd': password})
+
+        if user:
+            session['user'] = name
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Invalid username or password', 'error')
+            return render_template('login.html')
+
+    # If the request method is GET, simply render the login page
+    return render_template('login.html')
 # @app.route('/admin')
 # def admin():
     
+@app.route('/logout')
+def logout():
+    # Clear the user session
+    session.pop('user', None)
+    if 'user' not in session:
+         return redirect(url_for('login'))
+
+
+    
+    # Redirect to the login page
+    return redirect(url_for('login'))
 
 
 
@@ -162,8 +171,7 @@ def dashboard():
             }
         ])
         i = session['user']
-        session_timeout_seconds = app.permanent_session_lifetime.total_seconds()
-        return render_template('voter_dashboard.html', V=Voter, C=Candidate, M=M, i=i, session_timeout_seconds=session_timeout_seconds)
+        return render_template('voter_dashboard.html', V=Voter, C=Candidate, M=M, i=i)
     else:
         flash('You must be logged in to access the dashboard.', 'error')
         return redirect(url_for('login'))
