@@ -6,10 +6,10 @@ from datetime import timedelta
 app = Flask(__name__)
 app.secret_key = 'Cheik2263'  # Needed for sessions
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=24)  # Adjust the time as needed
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)  # Adjust the time as needed
 
 # Initialize Flask-Session
-Session(app)
+# Session(app)
 
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/Mongo'  # Change this URI based on your MongoDB configuration
 mongo = PyMongo(app)

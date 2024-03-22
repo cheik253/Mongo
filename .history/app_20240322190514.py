@@ -6,7 +6,7 @@ from datetime import timedelta
 app = Flask(__name__)
 app.secret_key = 'Cheik2263'  # Needed for sessions
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=24)  # Adjust the time as needed
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(mi)  # Adjust the time as needed
 
 # Initialize Flask-Session
 Session(app)

@@ -10,7 +10,10 @@
 </head>
 
 <body>
-
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+  This is a warning alert—check it out!
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
 
   <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
     data-sidebar-position="fixed" data-header-position="fixed">
@@ -263,26 +266,6 @@
  <script src="{{ url_for('static', filename='libs/apexcharts/dist/apexcharts.min.js')}}"></script>
   <script src="{{ url_for('static', filename='/libs/simplebar/dist/simplebar.js')}}"></script>
   <script src="{{ url_for('static', filename='/js/dashboard.js')}}"></script>
-  <script>
-    
-        // Get the session timeout value in seconds from Flask
-        var sessionTimeoutSeconds = {{ session_timeout_seconds }};
-        
-        // Convert session timeout to milliseconds
-        var sessionTimeoutMilliseconds = sessionTimeoutSeconds * 1000;
-
-        // Function to reload the page after session timeout
-        function reloadPageAfterSessionTimeout() {
-            setTimeout(function() {
-                location.reload(true); // Reload the page
-            }, sessionTimeoutMilliseconds);
-        }
-
-        // Call the function to start the countdown
-        reloadPageAfterSessionTimeout();
-  
-  </script>
-   
 </body>
 
 </html>

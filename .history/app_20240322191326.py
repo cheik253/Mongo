@@ -6,7 +6,7 @@ from datetime import timedelta
 app = Flask(__name__)
 app.secret_key = 'Cheik2263'  # Needed for sessions
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=24)  # Adjust the time as needed
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)  # Adjust the time as needed
 
 # Initialize Flask-Session
 Session(app)
@@ -72,7 +72,36 @@ def logout():
     session.pop('user', None)
     return redirect(url_for('login'))
 
-
+@app.route('/dashboard')
+def dashboard():
+    if 'user' in session:  # Check if user is logged in
+        C = Candidate.count_documents({})
+        V = Voter.count_documents({})
+        M = Candidate.aggregate([
+            {
+                '$unwind': '$voter'
+            },
+            {
+                '$group': {
+                    '_id': '$name',
+                    'count': { '$sum': 1 },
+                    'age': { '$first': '$age' }
+                }
+            },
+            {
+                '$sort': { 'count': -1 }
+            },
+            {
+                '$project': { '_id': 1, 'count': 1, 'age': 1 }
+            }
+        ])
+        i = session['user']
+        session_timeout_seconds = app.permanent_session_lifetime.total_seconds()
+        return render_template('voter_dashboard.html', V=Voter, C=Candidate, M=M, i=i, session_timeout_seconds=session_timeout_seconds)
+    else:
+        flash('You need to login first', 'error')
+        return redirect(url_for('login'))
+  
         
 
 
@@ -138,36 +167,7 @@ def count():
 
 
 
-@app.route('/dashboard')
-def dashboard():
-    if 'user' in session:  # Check if user is logged in
-        C = Candidate.count_documents({})
-        V = Voter.count_documents({})
-        M = Candidate.aggregate([
-            {
-                '$unwind': '$voter'
-            },
-            {
-                '$group': {
-                    '_id': '$name',
-                    'count': { '$sum': 1 },
-                    'age': { '$first': '$age' }
-                }
-            },
-            {
-                '$sort': { 'count': -1 }
-            },
-            {
-                '$project': { '_id': 1, 'count': 1, 'age': 1 }
-            }
-        ])
-        i = session['user']
-        session_timeout_seconds = app.permanent_session_lifetime.total_seconds()
-        return render_template('voter_dashboard.html', V=Voter, C=Candidate, M=M, i=i, session_timeout_seconds=session_timeout_seconds)
-    else:
-        flash('You must be logged in to access the dashboard.', 'error')
-        return redirect(url_for('login'))
-    
+  
 @app.route('/age_can')
 def age_can():
     try:

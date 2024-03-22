@@ -6,7 +6,7 @@ from datetime import timedelta
 app = Flask(__name__)
 app.secret_key = 'Cheik2263'  # Needed for sessions
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=24)  # Adjust the time as needed
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)  # Adjust the time as needed
 
 # Initialize Flask-Session
 Session(app)
@@ -73,7 +73,17 @@ def logout():
     return redirect(url_for('login'))
 
 
-        
+@app.route('/dashboard')
+def dashboard():
+    if 'user' in session:
+        return render_template('dashboard.html', username=session['user'])
+    else:
+        return redirect(url_for('login'))
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+     
 
 
  
@@ -162,8 +172,7 @@ def dashboard():
             }
         ])
         i = session['user']
-        session_timeout_seconds = app.permanent_session_lifetime.total_seconds()
-        return render_template('voter_dashboard.html', V=Voter, C=Candidate, M=M, i=i, session_timeout_seconds=session_timeout_seconds)
+        return render_template('voter_dashboard.html', V=Voter, C=Candidate, M=M, i=i)
     else:
         flash('You must be logged in to access the dashboard.', 'error')
         return redirect(url_for('login'))
