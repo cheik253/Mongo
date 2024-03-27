@@ -11,7 +11,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=100)  # Adjust the tim
 # Initialize Flask-Session
 Session(app)
 
-app.config['MONGO_URI'] = 'mongodb+srv://cheikgoth253:9pAYQNSDmDeNz83D@cluster0.k9cxtam.mongodb.net/Mongo'  # Change this URI based on your MongoDB configuration
+app.config['MONGO_URI'] = 'mongodb://localhost:27017/Mongo'  # Change this URI based on your MongoDB configuration
 mongo = PyMongo(app)
 Voter = mongo.db.voter
 Candidate = mongo.db.candidate
@@ -26,8 +26,8 @@ def register():
         age = int(request.form['age'])  # Convert age to integer
         pawd = request.form['passwd']
 
-        if age < 18:
-            flash('Age should be greater or equal to 18.', 'error')  # Flash an error message
+        if age < 16:
+            flash('Age should be greater or equal to 16.', 'error')  # Flash an error message
             return redirect(url_for('register'))
         check_name = Voter.find_one({'name': nom})
         check_pass = Voter.find_one({'paswd': pawd})
@@ -72,8 +72,6 @@ def logout():
 
 @app.route('/dashboard')
 def dashboard():
-    check_vote()
-
     if 'user' in session:  # Check if user is logged in
         C = Candidate.count_documents({})
         V = Voter.count_documents({})
@@ -101,7 +99,12 @@ def dashboard():
     else:
         flash('You must be logged in to access the dashboard.', 'error')
         return redirect(url_for('login'))
+@app.route('/check_result')
+def check_result():
+    voter_name=list(Voter.find({},{"name":1}))
+    c=list(Candidate.aggregate([{'$unwind':'$voter'},{'$group':{'_id':'$voter'}}]))
 
+    return jsonify(c)
    
 
  
@@ -144,34 +147,13 @@ def update_voted():
         Voter.update_many({"name": voter_name['name']}, {"$set": {"has_voted": 1}})
     
     return    redirect(url_for('dashboard'))
-
-@app.route('/check_vote')
-def check_vote():
- 
-
-    # Get all distinct voter names from the voter collection
-    distinct_voter_names = [voter['name'] for voter in Voter.find({}, {'name': 1})]
-
-    # Find candidates with voters not in the voter collection
-    candidates_with_invalid_voters = Candidate.find({'voter.name': {'$nin': distinct_voter_names}})
-
-    print("Candidates with invalid voters:")
-    for candidate in candidates_with_invalid_voters:
-        print(candidate)  # Print out candidate to see its type
-
-    # Remove invalid voters from the voter array in each candidate document
-    for candidate in candidates_with_invalid_voters:
-        invalid_voter_names = [voter['name'] for voter in candidate['voter'] if voter['name'] not in distinct_voter_names]
-        Candidate.update_one({'_id': candidate['_id']}, {'$pull': {'voter': {'name': {'$in': invalid_voter_names}}}})
-
-    return redirect(url_for('dashboard'))
 @app.route('/count')
 def count():
     try:
        # Replace 'your_collection_name' with your actual collection name
         result = list(Candidate.aggregate([
             { '$addFields': { 'numberOfElements': { '$size': "$voter" } } },
-            { '$project': { 'numberOfElements': 1, '_id': 0, 'name': 1 }} ,{'$match':{'numberOfElements':{'$gt':1}}}
+            { '$project': { 'numberOfElements': 1, '_id': 0, 'name': 1 }} }
         ]))
 
         numbers_of_elements = [int(entry['numberOfElements']) for entry in result]
@@ -207,12 +189,6 @@ def age_vote():
         return jsonify(chartData=[{"data": ages_list}], categories=candidates_list)
      except Exception as e:
         return jsonify(error=str(e)), 500
-
-
-
-
-
-
 
 
 

@@ -1,7 +1,5 @@
 [{
-  "_id": {
-    "$oid": "65ee0619488ed0a833694c8b"
-  },
+ 
   "name": "Johnwick",
   "age": 70,
   "has_voted": 1,
@@ -9,9 +7,7 @@
   "paswd": "3"
 },
 {
-  "_id": {
-    "$oid": "65ee28d873e8986e3437602d"
-  },
+ 
   "name": "madara",
   "age": 20,
   "has_voted": 1,
