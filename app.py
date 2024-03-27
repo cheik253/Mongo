@@ -1,21 +1,20 @@
-from flask import Flask, render_template, jsonify, url_for, redirect, request, flash, session
+from flask import Flask, render_template, redirect, url_for, request, flash, session,jsonify
 from flask_pymongo import PyMongo
-from flask_session import Session
 from datetime import timedelta
+from flask_session import Session
 
 app = Flask(__name__)
 app.secret_key = 'Cheik2263'  # Needed for sessions
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=24)  # Adjust the time as needed
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=100)  # Adjust the time as needed
 
 # Initialize Flask-Session
 Session(app)
 
-app.config['MONGO_URI'] = 'mongodb://localhost:27017/Mongo'  # Change this URI based on your MongoDB configuration
+app.config['MONGO_URI'] = 'mongodb+srv://cheikgoth253:9pAYQNSDmDeNz83D@cluster0.k9cxtam.mongodb.net/Mongo'  # Change this URI based on your MongoDB configuration
 mongo = PyMongo(app)
 Voter = mongo.db.voter
 Candidate = mongo.db.candidate
-
 
 @app.route('/', methods=['GET', 'POST'])
 def register():
@@ -27,8 +26,8 @@ def register():
         age = int(request.form['age'])  # Convert age to integer
         pawd = request.form['passwd']
 
-        if age < 16:
-            flash('Age should be greater or equal to 16.', 'error')  # Flash an error message
+        if age < 18:
+            flash('Age should be greater or equal to 18.', 'error')  # Flash an error message
             return redirect(url_for('register'))
         check_name = Voter.find_one({'name': nom})
         check_pass = Voter.find_one({'paswd': pawd})
@@ -47,7 +46,6 @@ def register():
 
     return render_template('register.html')
 
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if 'user' in session:
@@ -59,6 +57,7 @@ def login():
         user = Voter.find_one({'name': name, 'paswd': password})
 
         if user:
+            session.permanent = True  # Set session as permanent
             session['user'] = name
             return redirect(url_for('dashboard'))
         else:
@@ -66,15 +65,44 @@ def login():
 
     return render_template('login.html')
 
-
 @app.route('/logout')
 def logout():
     session.pop('user', None)
     return redirect(url_for('login'))
 
+@app.route('/dashboard')
+def dashboard():
+    check_vote()
 
-        
+    if 'user' in session:  # Check if user is logged in
+        C = Candidate.count_documents({})
+        V = Voter.count_documents({})
+        M = Candidate.aggregate([
+            {
+                '$unwind': '$voter'
+            },
+            {
+                '$group': {
+                    '_id': '$name',
+                    'count': { '$sum': 1 },
+                    'age': { '$first': '$age' }
+                }
+            },
+            {
+                '$sort': { 'count': -1 }
+            },
+            {
+                '$project': { '_id': 1, 'count': 1, 'age': 1 }
+            }
+        ])
+        i = session['user']
+        session_timeout_seconds = app.config['PERMANENT_SESSION_LIFETIME'].total_seconds()  # Directly using the session timeout value
+        return render_template('voter_dashboard.html', V=Voter, C=Candidate, M=M, i=i, session_timeout_seconds=session_timeout_seconds)
+    else:
+        flash('You must be logged in to access the dashboard.', 'error')
+        return redirect(url_for('login'))
 
+   
 
  
  
@@ -116,13 +144,34 @@ def update_voted():
         Voter.update_many({"name": voter_name['name']}, {"$set": {"has_voted": 1}})
     
     return    redirect(url_for('dashboard'))
+
+@app.route('/check_vote')
+def check_vote():
+ 
+
+    # Get all distinct voter names from the voter collection
+    distinct_voter_names = [voter['name'] for voter in Voter.find({}, {'name': 1})]
+
+    # Find candidates with voters not in the voter collection
+    candidates_with_invalid_voters = Candidate.find({'voter.name': {'$nin': distinct_voter_names}})
+
+    print("Candidates with invalid voters:")
+    for candidate in candidates_with_invalid_voters:
+        print(candidate)  # Print out candidate to see its type
+
+    # Remove invalid voters from the voter array in each candidate document
+    for candidate in candidates_with_invalid_voters:
+        invalid_voter_names = [voter['name'] for voter in candidate['voter'] if voter['name'] not in distinct_voter_names]
+        Candidate.update_one({'_id': candidate['_id']}, {'$pull': {'voter': {'name': {'$in': invalid_voter_names}}}})
+
+    return redirect(url_for('dashboard'))
 @app.route('/count')
 def count():
     try:
        # Replace 'your_collection_name' with your actual collection name
         result = list(Candidate.aggregate([
             { '$addFields': { 'numberOfElements': { '$size': "$voter" } } },
-            { '$project': { 'numberOfElements': 1, '_id': 0, 'name': 1 } }
+            { '$project': { 'numberOfElements': 1, '_id': 0, 'name': 1 }} ,{'$match':{'numberOfElements':{'$gt':1}}}
         ]))
 
         numbers_of_elements = [int(entry['numberOfElements']) for entry in result]
@@ -137,36 +186,6 @@ def count():
     
 
 
-
-@app.route('/dashboard')
-def dashboard():
-    if 'user' in session:  # Check if user is logged in
-        C = Candidate.count_documents({})
-        V = Voter.count_documents({})
-        M = Candidate.aggregate([
-            {
-                '$unwind': '$voter'
-            },
-            {
-                '$group': {
-                    '_id': '$name',
-                    'count': { '$sum': 1 },
-                    'age': { '$first': '$age' }
-                }
-            },
-            {
-                '$sort': { 'count': -1 }
-            },
-            {
-                '$project': { '_id': 1, 'count': 1, 'age': 1 }
-            }
-        ])
-        i = session['user']
-        session_timeout_seconds = app.permanent_session_lifetime.total_seconds()
-        return render_template('voter_dashboard.html', V=Voter, C=Candidate, M=M, i=i, session_timeout_seconds=session_timeout_seconds)
-    else:
-        flash('You must be logged in to access the dashboard.', 'error')
-        return redirect(url_for('login'))
     
 @app.route('/age_can')
 def age_can():
@@ -188,5 +207,13 @@ def age_vote():
         return jsonify(chartData=[{"data": ages_list}], categories=candidates_list)
      except Exception as e:
         return jsonify(error=str(e)), 500
+
+
+
+
+
+
+
+
 
 app.run(debug=True,port=8000)
