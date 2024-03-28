@@ -11,7 +11,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=100)  # Adjust the tim
 # Initialize Flask-Session
 Session(app)
 
-app.config['MONGO_URI'] = 'mongodb+srv://cheikgoth253:9pAYQNSDmDeNz83D@cluster0.k9cxtam.mongodb.net/Mongo'  # Change this URI based on your MongoDB configuration
+app.config['MONGO_URI'] = 'mongodb://localhost:27017/Mongo'  # Change this URI based on your MongoDB configuration
 mongo = PyMongo(app)
 Voter = mongo.db.voter
 Candidate = mongo.db.candidate
@@ -45,7 +45,6 @@ def register():
         return redirect(url_for('login'))
 
     return render_template('register.html')
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if 'user' in session:
@@ -57,13 +56,13 @@ def login():
         user = Voter.find_one({'name': name, 'paswd': password})
 
         if user:
-            session.permanent = True  # Set session as permanent
             session['user'] = name
             return redirect(url_for('dashboard'))
         else:
             flash('Invalid username or password', 'error')
 
     return render_template('login.html')
+
 
 @app.route('/logout')
 def logout():
@@ -108,24 +107,24 @@ def dashboard():
  
 
 
+
 @app.route('/voting/<candidate>/<voter>')
 def voting(candidate, voter):
-    # Check if the voter already exists in the candidate's voter list
-    candidate_doc = Candidate.find_one({'name': candidate, 'voter': {'$elemMatch': {'$eq': voter}}})
+    # Check if the voter has already voted
+    voter_doc = Voter.find_one({'name': voter, 'has_voted': 1})
 
-    if candidate_doc:
+    if voter_doc:
+        flash('You have already voted.')
         return redirect(url_for('dashboard'))
-        flash(f'You have already voted for {candidate}', 'error')
-    else:
-        # If the voter does not exist, update the candidate's voter list
-        Candidate.update_one({'name': candidate}, {'$push': {'voter': voter}})
-        update_voted()
-        flash(f'You have already voted for {candidate}', 'error')
-        return redirect(url_for('dashboard'))  # Assuming this function is defined elsewhere
-    return redirect(url_for('dashboard'))
 
-
+    # Update the candidate's voter list
+    Candidate.update_one({'name': candidate}, {'$push': {'voter': voter}})
     
+    # Update the voter's status to indicate that they have voted
+    update_voted()
+    
+    flash(f'You have successfully voted for {candidate}.', 'success')
+    return redirect(url_for('dashboard'))
 
 @app.route('/update_voted') 
 def update_voted():
@@ -208,7 +207,16 @@ def age_vote():
      except Exception as e:
         return jsonify(error=str(e)), 500
 
+# @app.route('/delete_voter')
+# def delete_voter():
+#     A=Voter.find()
+#     print(A)
+   
+   
+    
 
+
+    
 
 
 
