@@ -11,7 +11,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=100)  # Adjust the tim
 # Initialize Flask-Session
 Session(app)
 
-app.config['MONGO_URI'] = 'mongodb+srv://cheikgoth253:9pAYQNSDmDeNz83D@cluster0.k9cxtam.mongodb.net/Mongo'  # Change this URI based on your MongoDB configuration
+app.config['MONGO_URI'] = 'mongodb://localhost:27017/Mongo'  # Change this URI based on your MongoDB configuration
 mongo = PyMongo(app)
 Voter = mongo.db.voter
 Candidate = mongo.db.candidate
@@ -111,7 +111,7 @@ def dashboard():
 @app.route('/voting/<candidate>/<voter>')
 def voting(candidate, voter):
     # Check if the voter already exists in the candidate's voter list
-    candidate_doc = Candidate.find_one({'name': candidate, 'voter': {'$elemMatch': {'$eq': voter}}})
+    candidate_doc = Voter.find_one({'name':voter,'has_voted':1 })
 
     if candidate_doc:
         return redirect(url_for('dashboard'))
